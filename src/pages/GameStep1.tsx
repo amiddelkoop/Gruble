@@ -9,106 +9,87 @@ type GameStep1Props = {
     ) => void;
     setCategories: React.Dispatch<React.SetStateAction<string[]>>;
     setLetters: React.Dispatch<React.SetStateAction<string[]>>;
-    playerNames: string[];  // Add playerNames to the props
+    playerNames: string[];
+    updatePlayerNames: (updatedNames: string[]) => void;
 };
 
-const GameStep1: React.FC<GameStep1Props> = ({ onStartGame, setCategories, setLetters, playerNames }) => {
-    const [numPlayers, setNumPlayers] = useState(5);
+const GameStep1: React.FC<GameStep1Props> = ({
+                                                 onStartGame,
+                                                 setCategories,
+                                                 setLetters,
+                                                 playerNames,
+                                             }) => {
+    const [newCategory, setNewCategory] = useState('');
+    const [newLetter, setNewLetter] = useState('');
     const [categories, setCategoriesState] = useState<string[]>([]);
     const [letters, setLettersState] = useState<string[]>([]);
-    const [numCategories, setNumCategories] = useState(5);
-    const [numLetters, setNumLetters] = useState(5);
+
+    const handleCategoryAdd = () => {
+        if (newCategory.trim()) {
+            setCategoriesState([...categories, newCategory]);
+            setNewCategory('');
+        }
+    };
+
+    const handleLetterAdd = () => {
+        if (newLetter.length === 1 && /^[a-zA-Z]$/.test(newLetter)) {
+            setLettersState([...letters, newLetter]);
+            setNewLetter('');
+        }
+    };
 
     const handleSubmit = () => {
         setCategories(categories);
         setLetters(letters);
-        onStartGame(numPlayers, categories, letters, playerNames);
+        onStartGame(playerNames.length, categories, letters, playerNames);
     };
 
     return (
         <div>
             <h2>Game Setup</h2>
-            <label>
-                Number of players:
-                <input
-                    type="number"
-                    value={numPlayers}
-                    onChange={(e) => setNumPlayers(Number(e.target.value))}
-                    min={1}
-                    max={10}
-                />
-            </label>
+
             <div>
-                {Array.from({ length: numPlayers }, (_, index) => (
+                <h3>Players:</h3>
+                {playerNames.map((name, index) => (
                     <div key={index}>
-                        <label>{`Player ${index + 1} Name:`}</label>
-                        <input
-                            type="text"
-                            value={playerNames[index]}
-                            onChange={(e) => {
-                                const updatedNames = [...playerNames];
-                                updatedNames[index] = e.target.value;
-                                // Updating the playerNames prop is not possible directly
-                                // Instead, you should manage the state of playerNames in the parent component
-                            }}
-                        />
+                        <h4>{`Player ${index + 1}: ${name}`}</h4>
                     </div>
                 ))}
             </div>
+
             <div>
                 <h3>Categories</h3>
-                <label>
-                    Number of Categories:
-                    <input
-                        type="number"
-                        value={numCategories}
-                        onChange={(e) => setNumCategories(Number(e.target.value))}
-                        min={1}
-                        max={10}
-                    />
-                </label>
-                {Array.from({ length: numCategories }, (_, index) => (
-                    <div key={index}>
-                        <label>{`Category ${index + 1}:`}</label>
-                        <input
-                            type="text"
-                            value={categories[index] || ""}
-                            onChange={(e) => {
-                                const updatedCategories = [...categories];
-                                updatedCategories[index] = e.target.value;
-                                setCategoriesState(updatedCategories);
-                            }}
-                        />
-                    </div>
-                ))}
+                <input
+                    type="text"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    placeholder="Add category"
+                />
+                <button onClick={handleCategoryAdd}>Add Category</button>
+                <ul>
+                    {categories.map((category, index) => (
+                        <li key={index}>{category}</li>
+                    ))}
+                </ul>
             </div>
+
             <div>
                 <h3>Letters</h3>
-                <label>
-                    Number of Letters:
-                    <input
-                        type="number"
-                        value={numLetters}
-                        onChange={(e) => setNumLetters(Number(e.target.value))}
-                        min={1}
-                        max={10}
-                    />
-                </label>
-                {Array.from({ length: numLetters }, (_, index) => (
-                    <div key={index}>
-                        <label>{`Letter ${index + 1}:`}</label>
-                        <input
-                            type="text"
-                            value={letters[index] || ""}
-                            onChange={(e) => {
-                                const updatedLetters = [...letters];
-                                updatedLetters[index] = e.target.value;
-                                setLettersState(updatedLetters);
-                            }}
-                        />
-                    </div>
-                ))}
+                <input
+                    type="text"
+                    value={newLetter}
+                    onChange={(e) => setNewLetter(e.target.value)}
+                    maxLength={1}
+                    placeholder="Add letter"
+                />
+                <button onClick={handleLetterAdd}>Add Letter</button>
+                <ul>
+                    {letters.map((letter, index) => (
+                        <li key={index}>{letter}</li>
+                    ))}
+                </ul>
             </div>
+
             <button onClick={handleSubmit}>Start Game</button>
         </div>
     );

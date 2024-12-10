@@ -5,29 +5,32 @@ type GameStep0Props = {
 };
 
 const GameStep0: React.FC<GameStep0Props> = ({ onLogin }) => {
-    const [name, setName] = useState('');
+    const [name, setName] = useState(''); // Track input value for player name
 
-    const handleLogin = () => {
-        if (name.trim() !== '') {
-            onLogin(name);
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (name) {
+            onLogin(name);  // Pass the name to the parent
         } else {
-            alert("Please enter a name.");
+            alert("Please enter a name!");
         }
     };
 
     return (
         <div>
             <h2>Login</h2>
-            <label>
-                Enter your name:
-                <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Your Name"
-                />
-            </label>
-            <button onClick={handleLogin}>Login</button>
+            <form onSubmit={handleSubmit}>
+                <label>
+                    Enter your name:
+                    <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Player name"
+                    />
+                </label>
+                <button type="submit">Login</button>
+            </form>
         </div>
     );
 };

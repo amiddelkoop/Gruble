@@ -1,75 +1,58 @@
 import React, { useState } from 'react';
-import GameStep3 from './pages/GameStep3';
-import GameStep2 from './pages/GameStep2';
-import GameStep1 from './pages/GameStep1';
-import GameStep0 from './pages/GameStep0'; // Import GameStep0
-import { Player } from './types/Player.ts';
+import GameStep1 from "./pages/GameStep1.tsx";
+import GameStep2 from "./pages/GameStep2.tsx";
+import GameStep3 from "./pages/GameStep3.tsx";
+import GameStep0 from "./pages/GameStep0.tsx"; // Import GameStep0
+import { Player } from './types/Player';
 
 const App: React.FC = () => {
     const [players, setPlayers] = useState<Player[]>([]);
     const [categories, setCategories] = useState<string[]>([]);
     const [letters, setLetters] = useState<string[]>([]);
-    const [gameStep, setGameStep] = useState(0); // Start from GameStep0
-    const [playerNames, setPlayerNames] = useState<string[]>([]); // Store the player names
+    const [gameStep, setGameStep] = useState(0);  // Track current game step
+    const [playerNames, setPlayerNames] = useState<string[]>([]);  // Array to hold player names
 
-    const handleGameStart = (
-        numPlayers: number,
-        selectedCategories: string[],
-        selectedLetters: string[],
-        playerNames: string[] // This should now correctly take the player names
-    ) => {
-        const initializedPlayers = Array.from({ length: numPlayers }, (_, index) => ({
+    // Function to handle the player login
+    const handleLogin = (name: string) => {
+        setPlayerNames([name]); // Set the player name as a single-element array
+        setGameStep(1); // Move to the next game step (GameStep1)
+    };
+
+    // Function to start the game with selected settings
+    const handleGameStart = (numPlayers: number, selectedCategories: string[], selectedLetters: string[], playerNames: string[]) => {
+        const initializedPlayers: Player[] = Array.from({ length: numPlayers }, (_, index) => ({
             name: playerNames[index] || `Player ${index + 1}`,
-            pickedLetters: selectedLetters,
-            pickedCategories: selectedCategories,
-            grid: Array(selectedCategories.length)
-                .fill(null)
-                .map(() => Array(selectedLetters.length).fill('')),
+            pickedLetters: [],
+            pickedCategories: [],
+            grid: Array(selectedCategories.length).fill(null).map(() => Array(selectedLetters.length).fill('')),
         }));
 
         setPlayers(initializedPlayers);
         setCategories(selectedCategories);
         setLetters(selectedLetters);
-        setGameStep(1);
+        setGameStep(2); // Move to GameStep2 (gameplay step)
     };
 
-    const handleLogin = (name: string) => {
-        setPlayerNames([name]); // Store the player name in the array
-        setGameStep(1); // Move to the next game step (GameStep1)
-    };
-
-    const endGame = () => {
-        setGameStep(3);
-    };
-
-    const handleSubmit = () => {
-        setGameStep(3);
+    // Function to update player names
+    const updatePlayerNames = (updatedNames: string[]) => {
+        setPlayerNames(updatedNames);
     };
 
     return (
         <div>
-            {gameStep === 0 && <GameStep0 onLogin={handleLogin} />} {/* Show GameStep0 */}
+            {gameStep === 0 && <GameStep0 onLogin={handleLogin} />}  {/* Display login screen */}
 
             {gameStep === 1 && (
                 <GameStep1
                     onStartGame={handleGameStart}
                     setCategories={setCategories}
                     setLetters={setLetters}
-                    playerNames={playerNames} // Pass playerNames to GameStep1
+                    playerNames={playerNames}  // Pass playerNames to GameStep1
+                    updatePlayerNames={updatePlayerNames}  // Pass the function to update playerNames
                 />
             )}
 
-            {gameStep === 2 && (
-                <GameStep2
-                    players={players}
-                    onGameEnd={endGame}
-                    categories={categories}
-                    letters={letters}
-                    setPlayers={setPlayers}
-                    onSubmit={handleSubmit}
-                />
-            )}
-
+            {gameStep === 2 && <GameStep2 players={players} onGameEnd={() => {}} categories={categories} letters={letters} setPlayers={setPlayers} onSubmit={() => {}} />}
             {gameStep === 3 && <GameStep3 players={players} />}
         </div>
     );
