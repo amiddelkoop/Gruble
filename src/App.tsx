@@ -1,35 +1,67 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import GameStep3 from './pages/GameStep3';
+import GameStep2 from './pages/GameStep2';
+import GameStep1 from './pages/GameStep1';
 
-function App() {
-  const [count, setCount] = useState(0)
+type Player = {
+    name: string;
+    pickedLetters: string[];
+    pickedCategories: string[];
+    grid: string[][];
+};
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+const App: React.FC = () => {
+    const [players, setPlayers] = useState<Player[]>([]);
+    const [categories, setCategories] = useState<string[]>([]);
+    const [letters, setLetters] = useState<string[]>([]);
+    const [gameStep, setGameStep] = useState(1);
 
-export default App
+    const handleGameStart = (
+        numPlayers: number,
+        selectedCategories: string[],
+        selectedLetters: string[],
+        playerNames: string[]
+    ) => {
+        const initializedPlayers = Array.from({ length: numPlayers }, (_, index) => ({
+            name: playerNames[index] || `Player ${index + 1}`,
+            pickedLetters: selectedLetters,
+            pickedCategories: selectedCategories,
+            grid: Array(selectedCategories.length)
+                .fill(null)
+                .map(() => Array(selectedLetters.length).fill('')),
+        }));
+
+        setPlayers(initializedPlayers);
+        setCategories(selectedCategories);
+        setLetters(selectedLetters);
+        setGameStep(2);
+    };
+
+    const endGame = () => {
+        setGameStep(3);
+    };
+
+    return (
+        <div>
+            {gameStep === 1 && (
+                <GameStep1
+                    onStartGame={handleGameStart}
+                    setCategories={setCategories}
+                />
+            )}
+
+            {gameStep === 2 && (
+                <GameStep2
+                    players={players}
+                    onGameEnd={endGame}
+                    categories={categories}
+                    letters={letters}
+                />
+            )}
+
+            {gameStep === 3 && <GameStep3 players={players} />}
+        </div>
+    );
+};
+
+export default App;
