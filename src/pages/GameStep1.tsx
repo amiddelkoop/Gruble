@@ -9,13 +9,13 @@ type GameStep1Props = {
     ) => void;
     setCategories: React.Dispatch<React.SetStateAction<string[]>>;
     setLetters: React.Dispatch<React.SetStateAction<string[]>>;
+    playerNames: string[];  // Add playerNames to the props
 };
 
-const GameStep1: React.FC<GameStep1Props> = ({ onStartGame, setCategories, setLetters }) => {
+const GameStep1: React.FC<GameStep1Props> = ({ onStartGame, setCategories, setLetters, playerNames }) => {
     const [numPlayers, setNumPlayers] = useState(5);
     const [categories, setCategoriesState] = useState<string[]>([]);
     const [letters, setLettersState] = useState<string[]>([]);
-    const [playerNames, setPlayerNames] = useState<string[]>(['Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5']);
     const [numCategories, setNumCategories] = useState(5);
     const [numLetters, setNumLetters] = useState(5);
 
@@ -48,7 +48,8 @@ const GameStep1: React.FC<GameStep1Props> = ({ onStartGame, setCategories, setLe
                             onChange={(e) => {
                                 const updatedNames = [...playerNames];
                                 updatedNames[index] = e.target.value;
-                                setPlayerNames(updatedNames);
+                                // Updating the playerNames prop is not possible directly
+                                // Instead, you should manage the state of playerNames in the parent component
                             }}
                         />
                     </div>
