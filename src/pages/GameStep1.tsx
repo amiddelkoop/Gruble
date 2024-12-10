@@ -8,9 +8,10 @@ type GameStep1Props = {
         playerNames: string[]
     ) => void;
     setCategories: React.Dispatch<React.SetStateAction<string[]>>;
+    setLetters: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
-const GameStep1: React.FC<GameStep1Props> = ({ onStartGame, setCategories }) => {
+const GameStep1: React.FC<GameStep1Props> = ({ onStartGame, setCategories, setLetters }) => {
     const [numPlayers, setNumPlayers] = useState(5);
     const [categories, setCategoriesState] = useState<string[]>([]);
     const [letters, setLettersState] = useState<string[]>([]);
@@ -20,8 +21,7 @@ const GameStep1: React.FC<GameStep1Props> = ({ onStartGame, setCategories }) => 
 
     const handleSubmit = () => {
         setCategories(categories);
-        setCategoriesState(categories);
-        setLettersState(letters);
+        setLetters(letters);
         onStartGame(numPlayers, categories, letters, playerNames);
     };
 
@@ -114,4 +114,3 @@ const GameStep1: React.FC<GameStep1Props> = ({ onStartGame, setCategories }) => 
 };
 
 export default GameStep1;
-

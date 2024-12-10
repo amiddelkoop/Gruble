@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import GameStep3 from './pages/GameStep3';
 import GameStep2 from './pages/GameStep2';
 import GameStep1 from './pages/GameStep1';
-
-type Player = {
-    name: string;
-    pickedLetters: string[];
-    pickedCategories: string[];
-    grid: string[][];
-};
+import { Player } from './types/Player.ts';
 
 const App: React.FC = () => {
     const [players, setPlayers] = useState<Player[]>([]);
@@ -41,12 +35,17 @@ const App: React.FC = () => {
         setGameStep(3);
     };
 
+    const handleSubmit = () => {
+        setGameStep(3);
+    };
+
     return (
         <div>
             {gameStep === 1 && (
                 <GameStep1
                     onStartGame={handleGameStart}
                     setCategories={setCategories}
+                    setLetters={setLetters}
                 />
             )}
 
@@ -56,6 +55,8 @@ const App: React.FC = () => {
                     onGameEnd={endGame}
                     categories={categories}
                     letters={letters}
+                    setPlayers={setPlayers}
+                    onSubmit={handleSubmit}
                 />
             )}
 

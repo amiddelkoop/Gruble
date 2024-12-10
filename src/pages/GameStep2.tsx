@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-
-type Player = {
-    name: string;
-    grid: string[][];
-};
+import { Player } from "../types/Player";
 
 type GameStep2Props = {
     players: Player[];
     onGameEnd: () => void;
     categories: string[];
     letters: string[];
+    setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
+    onSubmit: () => void;
 };
 
 const GameStep2: React.FC<GameStep2Props> = ({
@@ -17,6 +15,8 @@ const GameStep2: React.FC<GameStep2Props> = ({
                                                  onGameEnd,
                                                  categories,
                                                  letters,
+                                                 setPlayers,
+                                                 onSubmit,
                                              }) => {
     const [timeLeft, setTimeLeft] = useState(300);
     const [isGameOver, setIsGameOver] = useState(false);
@@ -33,9 +33,22 @@ const GameStep2: React.FC<GameStep2Props> = ({
         }
     }, [timeLeft, onGameEnd]);
 
-    const handleCellChange = (playerIndex: number, rowIndex: number, colIndex: number, value: string) => {
+    const handleCellChange = (
+        playerIndex: number,
+        rowIndex: number,
+        letterIndex: number,
+        value: string
+    ) => {
         const updatedPlayers = [...players];
-        updatedPlayers[playerIndex].grid[rowIndex][colIndex] = value;
+        updatedPlayers[playerIndex] = {
+            ...updatedPlayers[playerIndex],
+            grid: updatedPlayers[playerIndex].grid.map((row, rIdx) =>
+                rIdx === rowIndex
+                    ? row.map((cell, cIdx) => (cIdx === letterIndex ? value : cell))
+                    : row
+            ),
+        };
+        setPlayers(updatedPlayers);
     };
 
     return (
@@ -58,16 +71,21 @@ const GameStep2: React.FC<GameStep2Props> = ({
                     {categories.map((category, rowIndex) => (
                         <tr key={rowIndex}>
                             <th>{category}</th>
-                            {players.map((player, playerIndex) => (
-                                <td key={playerIndex}>
+                            {letters.map((_letter, letterIndex) => (
+                                <td key={letterIndex}>
                                     <input
                                         type="text"
-                                        value={player.grid[rowIndex][playerIndex]}
+                                        value={players[0]?.grid[rowIndex][letterIndex] || ''}
                                         onChange={(e) =>
-                                            handleCellChange(playerIndex, rowIndex, playerIndex, e.target.value)
+                                            handleCellChange(
+                                                0,
+                                                rowIndex,
+                                                letterIndex,
+                                                e.target.value
+                                            )
                                         }
                                         disabled={isGameOver}
-                                        maxLength={1}
+                                        maxLength={30}
                                     />
                                 </td>
                             ))}
@@ -76,6 +94,10 @@ const GameStep2: React.FC<GameStep2Props> = ({
                     </tbody>
                 </table>
             </div>
+
+            <button onClick={onSubmit} disabled={isGameOver}>
+                Submit Grid
+            </button>
         </div>
     );
 };
