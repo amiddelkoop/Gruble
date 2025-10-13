@@ -1,61 +1,73 @@
-import React, { useState } from 'react';
-import GameStep1 from "./pages/GameStep1.tsx";
-import GameStep2 from "./pages/GameStep2.tsx";
-import GameStep3 from "./pages/GameStep3.tsx";
-import GameStep0 from "./pages/GameStep0.tsx"; // Import GameStep0
-import { Player } from './types/Player';
+import { useMemo, useState } from "react";
 
-const App: React.FC = () => {
-    const [players, setPlayers] = useState<Player[]>([]);
-    const [categories, setCategories] = useState<string[]>([]);
-    const [letters, setLetters] = useState<string[]>([]);
-    const [gameStep, setGameStep] = useState(0);  // Track current game step
-    const [playerNames, setPlayerNames] = useState<string[]>([]);  // Array to hold player names
+function buildGrid(rows: number, cols: number, prev?: string[][]): string[][] {
+    const g: string[][] = Array.from({ length: rows }, () => Array(cols).fill(""));
+    if (prev) {
+        for (let r = 0; r < Math.min(rows, prev.length); r++) {
+            for (let c = 0; c < Math.min(cols, prev[r].length); c++) {
+                g[r][c] = prev[r][c];
+            }
+        }
+    }
+    return g;
+}
 
-    // Function to handle the player login
-    const handleLogin = (name: string) => {
-        setPlayerNames([name]); // Set the player name as a single-element array
-        setGameStep(1); // Move to the next game step (GameStep1)
+export default function ResizableGrid() {
+    const [size, setSize] = useState<number>(5);
+    const [grid, setGrid] = useState<string[][]>(() => buildGrid(5, 5));
+
+    const tableId = useMemo(() => `rg-${Math.random().toString(36).slice(2)}`,[ ]);
+
+    const resize = (delta: number) => {
+        setSize((prev) => {
+            const next = Math.max(1, Math.min(30, prev + delta));
+            setGrid((g) => buildGrid(next, next, g));
+            return next;
+        });
     };
 
-    // Function to start the game with selected settings
-    const handleGameStart = (numPlayers: number, selectedCategories: string[], selectedLetters: string[], playerNames: string[]) => {
-        const initializedPlayers: Player[] = Array.from({ length: numPlayers }, (_, index) => ({
-            name: playerNames[index] || `Player ${index + 1}`,
-            pickedLetters: [],
-            pickedCategories: [],
-            grid: Array(selectedCategories.length).fill(null).map(() => Array(selectedLetters.length).fill('')),
-        }));
-
-        setPlayers(initializedPlayers);
-        setCategories(selectedCategories);
-        setLetters(selectedLetters);
-        setGameStep(2); // Move to GameStep2 (gameplay step)
+    const updateCell = (r: number, c: number, value: string) => {
+        setGrid((prev) => {
+            const next = prev.map((row) => row.slice());
+            next[r][c] = value;
+            return next;
+        });
     };
 
-    // Function to update player names
-    const updatePlayerNames = (updatedNames: string[]) => {
-        setPlayerNames(updatedNames);
-    };
+    const clearAll = () => setGrid(buildGrid(size, size));
 
     return (
-        <div>
-            {gameStep === 0 && <GameStep0 onLogin={handleLogin} />}  {/* Display login screen */}
+        <div className="rg-container">
+            <div className="rg">
+                <h2>GRUBLE {size}×{size}</h2>
+                <div className="rg-controls" role="group" aria-label="Resize grid">
+                    <button onClick={() => resize(-1)} disabled={size <= 1} aria-label="Decrease size">−</button>
+                    <span className="rg-size" aria-live="polite" aria-atomic="true">{size} × {size}</span>
+                    <button onClick={() => resize(1)} disabled={size >= 30} aria-label="Increase size">+</button>
+                    <button onClick={clearAll} title="Clear all cells">Clear</button>
+                </div>
 
-            {gameStep === 1 && (
-                <GameStep1
-                    onStartGame={handleGameStart}
-                    setCategories={setCategories}
-                    setLetters={setLetters}
-                    playerNames={playerNames}  // Pass playerNames to GameStep1
-                    updatePlayerNames={updatePlayerNames}  // Pass the function to update playerNames
-                />
-            )}
-
-            {gameStep === 2 && <GameStep2 players={players} onGameEnd={() => {}} categories={categories} letters={letters} setPlayers={setPlayers} onSubmit={() => {}} />}
-            {gameStep === 3 && <GameStep3 players={players} />}
+                <table id={tableId} className="rg-table" aria-describedby={`${tableId}-desc`}>
+                    <caption id={`${tableId}-desc`}>GRUBLE.</caption>
+                    <tbody>
+                    {Array.from({ length: size }).map((_, r) => (
+                        <tr key={r}>
+                            {Array.from({ length: size }).map((__, c) => (
+                                <td key={`${r}-${c}`}>
+                                    <label className="rg-cell">
+                                        <input
+                                            aria-label={`Row ${r + 1}, Column ${c + 1}`}
+                                            value={grid[r]?.[c] ?? ""}
+                                            onChange={(e) => updateCell(r, c, e.target.value)}
+                                        />
+                                    </label>
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
-};
-
-export default App;
+}
