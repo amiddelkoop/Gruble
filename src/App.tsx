@@ -1,10 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import "./index.css";
-
-const CELL_WIDTH = 150;
-const CELL_HEIGHT = 3 * 16;
 
 function buildGrid(rows: number, cols: number, prev?: string[][]): string[][] {
     const g: string[][] = Array.from({ length: rows }, () => Array(cols).fill(""));
@@ -22,11 +19,19 @@ export default function ResizableGrid() {
     const [rows, setRows] = useState<number>(5);
     const [cols, setCols] = useState<number>(5);
     const [grid, setGrid] = useState<string[][]>(() => buildGrid(5, 5));
-    const tableId = useMemo(() => `rg-${Math.random().toString(36).slice(2)}`, []);
-    const backgroundImage = useMemo(() => {
-        const images = ["One.jpeg", "Two.jpeg", "Three.jpeg"];
-        return images[Math.floor(Math.random() * images.length)];
+    const [isMobile, setIsMobile] = useState(false);
+    const [backgroundImage, setBackgroundImage] = useState("Three.jpeg");
+
+    useEffect(() => {
+        const mobile = window.innerWidth <= 768;
+        setIsMobile(mobile);
+        setBackgroundImage(mobile ? "Two.jpeg" : "Three.jpeg");
     }, []);
+
+    const tableId = useMemo(() => `rg-${Math.random().toString(36).slice(2)}`, []);
+
+    const CELL_WIDTH = isMobile ? 60 : 150;
+    const CELL_HEIGHT = isMobile ? 38 : 48;
 
     const resizeRows = (delta: number) => {
         setRows((prev) => {
@@ -52,13 +57,18 @@ export default function ResizableGrid() {
         });
     };
 
-    const gridWidth = cols * CELL_WIDTH;
-    const gridHeight = rows * CELL_HEIGHT;
+    const spacing = 1;
+    const gridWidth = cols * CELL_WIDTH + (cols - 1) * spacing;
+    const gridHeight = rows * CELL_HEIGHT + (rows - 1) * spacing;
+
+    const gap = isMobile ? 3 : 6;
+    const rightButtonHeight = (gridHeight - gap) / 2;
 
     return (
-        <div
+        <main
             style={{
-                minHeight: "100vh",
+                width: "100vw",
+                height: "100vh",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -67,91 +77,181 @@ export default function ResizableGrid() {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
+                padding: isMobile ? "0.3rem" : "2rem",
+                boxSizing: "border-box",
+                overflow: "hidden",
             }}
         >
-            <h2>GRUBLE {rows}×{cols}</h2>
-            <div
+            <h1
                 style={{
-                    padding: "2rem",
-                    borderRadius: "12px",
-                    backgroundColor: "rgba(255, 255, 255, 0.4)",
-                    backdropFilter: "blur(3px)",
+                    fontSize: isMobile ? "18px" : "32px",
+                    marginBottom: isMobile ? "0.5rem" : "1.5rem",
                 }}
             >
-                <div className="relative inline-block">
-                    <div className="flex">
-                        <table
-                            id={tableId}
-                            style={{ borderCollapse: "collapse" }}
-                            aria-describedby={`${tableId}-desc`}
+                GRUBLE {rows}×{cols}
+            </h1>
+
+            <section
+                style={{
+                    width: isMobile ? "90vw" : "auto",
+                    maxWidth: "95vw",
+                    maxHeight: "85vh",
+                    overflow: "auto",
+                    padding: isMobile ? "0.5rem" : "2rem",
+                    borderRadius: "16px",
+                    backgroundColor: "rgba(255, 255, 255, 0.4)",
+                    backdropFilter: "blur(3px)",
+                    boxSizing: "border-box",
+                }}
+            >
+                <section
+                    className="relative inline-block"
+                    style={{
+                        borderRadius: "16px",
+                        padding: "4px",
+                        overflow: "auto",
+                        display: "flex",
+                        flexDirection: "column",
+                    }}
+                >
+                    <div style={{ display: "flex" }}>
+                        <div
+                            style={{
+                                width: `${gridWidth}px`,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "stretch",
+                            }}
                         >
-                            <caption id={`${tableId}-desc`} className="sr-only">
-                                GRUBLE.
-                            </caption>
-                            <tbody>
-                            {Array.from({ length: rows }).map((_, r) => (
-                                <tr key={r}>
-                                    {Array.from({ length: cols }).map((__, c) => (
-                                        <td
-                                            key={`${r}-${c}`}
-                                            style={{
-                                                padding: 0,
-                                                margin: 0,
-                                                width: CELL_WIDTH,
-                                                height: CELL_HEIGHT,
-                                            }}
-                                        >
-                                            <input
-                                                aria-label={`Row ${r + 1}, Column ${c + 1}`}
-                                                value={grid[r]?.[c] ?? ""}
-                                                onChange={(e) => updateCell(r, c, e.target.value)}
+                            <table
+                                id={tableId}
+                                style={{
+                                    borderCollapse: "separate",
+                                    borderSpacing: `${spacing}px`,
+                                    borderRadius: "16px",
+                                    overflow: "hidden",
+                                    width: "100%",
+                                }}
+                                aria-describedby={`${tableId}-desc`}
+                            >
+                                <caption id={`${tableId}-desc`} className="sr-only">
+                                    GRUBLE.
+                                </caption>
+                                <tbody>
+                                {Array.from({ length: rows }).map((_, r) => (
+                                    <tr key={r}>
+                                        {Array.from({ length: cols }).map((__, c) => (
+                                            <td
+                                                key={`${r}-${c}`}
                                                 style={{
+                                                    padding: 0,
+                                                    margin: 0,
                                                     width: CELL_WIDTH,
                                                     height: CELL_HEIGHT,
-                                                    border: "1px solid rgba(0,0,0,0.2)",
-                                                    padding: "0 4px",
-                                                    margin: 0,
-                                                    boxSizing: "border-box",
-                                                    background: "transparent",
-                                                    color: "black",
-                                                    outline: "none",
                                                 }}
-                                                onFocus={(e) => (e.target.style.outline = "none")}
-                                            />
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                                            >
+                                                <input
+                                                    aria-label={`Row ${r + 1}, Column ${c + 1}`}
+                                                    value={grid[r]?.[c] ?? ""}
+                                                    onChange={(e) => updateCell(r, c, e.target.value)}
+                                                    style={{
+                                                        width: CELL_WIDTH,
+                                                        height: CELL_HEIGHT,
+                                                        border: "1px solid rgba(0,0,0,0.2)",
+                                                        padding: "0 4px",
+                                                        fontSize: isMobile ? "13px" : "24px",
+                                                        margin: 0,
+                                                        boxSizing: "border-box",
+                                                        background: "transparent",
+                                                        color: "black",
+                                                        fontFamily: "'Bebas Neue', sans-serif",
+                                                        outline: "none",
+                                                        borderRadius: "8px",
+                                                    }}
+                                                />
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+
+                            <div
+                                style={{
+                                    display: "flex",
+                                    gap: `${gap}px`,
+                                    width: "100%",
+                                    marginTop: "6px",
+                                }}
+                            >
+                                <button
+                                    onClick={() => resizeRows(1)}
+                                    disabled={rows >= 30}
+                                    style={{
+                                        flex: 1,
+                                        height: CELL_HEIGHT,
+                                        background: "transparent",
+                                        border: "1px solid rgba(0,0,0,0.2)",
+                                        cursor: "pointer",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        borderRadius: "12px",
+                                    }}
+                                >
+                                    <AddIcon fontSize={isMobile ? "small" : "medium"} />
+                                </button>
+                                <button
+                                    onClick={() => resizeRows(-1)}
+                                    disabled={rows <= 1}
+                                    style={{
+                                        flex: 1,
+                                        height: CELL_HEIGHT,
+                                        background: "transparent",
+                                        border: "1px solid rgba(0,0,0,0.2)",
+                                        cursor: "pointer",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        borderRadius: "12px",
+                                    }}
+                                >
+                                    <RemoveIcon fontSize={isMobile ? "small" : "medium"} />
+                                </button>
+                            </div>
+                        </div>
+
                         <div
                             style={{
                                 display: "flex",
                                 flexDirection: "column",
                                 height: `${gridHeight}px`,
+                                marginLeft: "6px",
                             }}
                         >
                             <button
                                 onClick={() => resizeCols(1)}
                                 disabled={cols >= 30}
                                 style={{
-                                    height: gridHeight / 2,
+                                    height: rightButtonHeight,
                                     width: CELL_HEIGHT,
+                                    marginBottom: `${gap}px`,
                                     background: "transparent",
                                     border: "1px solid rgba(0,0,0,0.2)",
                                     cursor: "pointer",
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
+                                    borderRadius: "12px",
                                 }}
                             >
-                                <AddIcon />
+                                <AddIcon fontSize={isMobile ? "small" : "medium"} />
                             </button>
                             <button
                                 onClick={() => resizeCols(-1)}
                                 disabled={cols <= 1}
                                 style={{
-                                    height: gridHeight / 2,
+                                    height: rightButtonHeight,
                                     width: CELL_HEIGHT,
                                     background: "transparent",
                                     border: "1px solid rgba(0,0,0,0.2)",
@@ -159,53 +259,15 @@ export default function ResizableGrid() {
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
+                                    borderRadius: "12px",
                                 }}
                             >
-                                <RemoveIcon />
+                                <RemoveIcon fontSize={isMobile ? "small" : "medium"} />
                             </button>
                         </div>
                     </div>
-                    <div
-                        style={{
-                            display: "flex",
-                            width: `${gridWidth}px`,
-                        }}
-                    >
-                        <button
-                            onClick={() => resizeRows(1)}
-                            disabled={rows >= 30}
-                            style={{
-                                width: gridWidth / 2,
-                                height: CELL_HEIGHT,
-                                background: "transparent",
-                                border: "1px solid rgba(0,0,0,0.2)",
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                            }}
-                        >
-                            <AddIcon />
-                        </button>
-                        <button
-                            onClick={() => resizeRows(-1)}
-                            disabled={rows <= 1}
-                            style={{
-                                width: gridWidth / 2,
-                                height: CELL_HEIGHT,
-                                background: "transparent",
-                                border: "1px solid rgba(0,0,0,0.2)",
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                            }}
-                        >
-                            <RemoveIcon />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+                </section>
+            </section>
+        </main>
     );
 }
