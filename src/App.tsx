@@ -23,6 +23,10 @@ export default function ResizableGrid() {
     const [cols, setCols] = useState<number>(5);
     const [grid, setGrid] = useState<string[][]>(() => buildGrid(5, 5));
     const tableId = useMemo(() => `rg-${Math.random().toString(36).slice(2)}`, []);
+    const backgroundImage = useMemo(() => {
+        const images = ["One.jpeg", "Two.jpeg", "Three.jpeg"];
+        return images[Math.floor(Math.random() * images.length)];
+    }, []);
 
     const resizeRows = (delta: number) => {
         setRows((prev) => {
@@ -59,7 +63,7 @@ export default function ResizableGrid() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundImage: "url('One.jpeg')",
+                backgroundImage: `url('${backgroundImage}')`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
