@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import "./index.css";
 
 function buildGrid(rows: number, cols: number, prev?: string[][]): string[][] {
@@ -57,6 +58,10 @@ export default function ResizableGrid() {
         });
     };
 
+    const clearGrid = () => {
+        setGrid(buildGrid(rows, cols));
+    };
+
     const spacing = 1;
     const gridWidth = cols * CELL_WIDTH + (cols - 1) * spacing;
     const gridHeight = rows * CELL_HEIGHT + (rows - 1) * spacing;
@@ -82,14 +87,42 @@ export default function ResizableGrid() {
                 overflow: "hidden",
             }}
         >
-            <h1
+            <div
                 style={{
-                    fontSize: isMobile ? "18px" : "32px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
                     marginBottom: isMobile ? "0.5rem" : "1.5rem",
                 }}
             >
-                GRUBLE {rows}×{cols}
-            </h1>
+                <h1
+                    style={{
+                        fontSize: isMobile ? "18px" : "32px",
+                    }}
+                >
+                    GRUBLE {rows}×{cols}
+                </h1>
+                <button
+                    onClick={clearGrid}
+                    style={{
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: "0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <RefreshIcon
+                        style={{
+                            fontSize: isMobile ? "28px" : "40px",
+                            fontWeight: "bold",
+                            color: "black",
+                        }}
+                    />
+                </button>
+            </div>
 
             <section
                 style={{
